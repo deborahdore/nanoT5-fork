@@ -1,21 +1,17 @@
-from accelerate import Accelerator
-from omegaconf import open_dict
-import hydra
-import torch
 import time
 
-from .utils import (
-    setup_basics,
-    train,
-    predict,
-    eval,
-    get_lr_scheduler,
-    get_optimizer,
-    get_tokenizer,
-    get_model,
-    get_dataloaders,
-    get_config,
-)
+import hydra
+import rootutils
+import torch
+from accelerate import Accelerator
+from omegaconf import open_dict
+
+rootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
+
+from nanoT5.utils.gen_utils import setup_basics
+from nanoT5.utils.model_utils import get_config, get_model, get_tokenizer, get_optimizer, get_lr_scheduler, \
+    get_dataloaders
+from nanoT5.utils.train_utils import predict, train, evaluate
 
 
 @hydra.main(config_path="configs", config_name="default", version_base='1.1')
@@ -55,7 +51,7 @@ def main(args):
     if args.eval_only:
         model.eval()
         with torch.no_grad():
-            eval(model, test_dataloader, logger, args, tokenizer)
+            evaluate(model, test_dataloader, logger, args, tokenizer)
     elif args.predict_only:
         model.eval()
         with torch.no_grad():

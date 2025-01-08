@@ -9,21 +9,21 @@ device: gpu
 precision: 'bf16'
 eval_only: false
 predict_only: false
-seed: 2137
+seed: 42
 
 model:
-  klass: local_t5
+  klass: hf_t5
   name: 'google/t5-v1_1-base'
   overwrite:
     dropout_rate: 0.0
   add_config:
     is_bf16: false
   checkpoint_path: ''
-  random_init: true
+  random_init: false
   compile: false # Pytorch 2.0
 
 data:
-  input_length: 512
+  input_length: 128 # TODO
   mlm_probability: 0.15
   mean_noise_span_length: 3.0
   num_workers: 8

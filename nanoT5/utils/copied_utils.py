@@ -1,15 +1,15 @@
-from typing import Dict, List
-import numpy as np
-from transformers import BatchEncoding
-from dataclasses import dataclass
-from transformers import AutoTokenizer
-import torch
 import math
-from torch.optim import Optimizer
-from typing import Iterable, Tuple
-from torch import nn
-import random
 import string
+from dataclasses import dataclass
+from typing import Dict, List
+from typing import Iterable, Tuple
+
+import numpy as np
+import torch
+from torch import nn
+from torch.optim import Optimizer
+from transformers import AutoTokenizer
+from transformers import BatchEncoding
 
 
 @dataclass
@@ -266,13 +266,13 @@ class AdamWScale(Optimizer):
     """
 
     def __init__(
-        self,
-        params: Iterable[nn.parameter.Parameter],
-        lr: float = 1e-3,
-        betas: Tuple[float, float] = (0.9, 0.999),
-        eps: float = 1e-6,
-        weight_decay: float = 0.0,
-        correct_bias: bool = True,
+            self,
+            params: Iterable[nn.parameter.Parameter],
+            lr: float = 1e-3,
+            betas: Tuple[float, float] = (0.9, 0.999),
+            eps: float = 1e-6,
+            weight_decay: float = 0.0,
+            correct_bias: bool = True,
     ):
         if lr < 0.0:
             raise ValueError(f"Invalid learning rate: {lr} - should be >= 0.0")
@@ -357,7 +357,7 @@ class AdamWScale(Optimizer):
 
 def tokenize_function(examples, tokenizer, in_length):
     tokenizer_out = tokenizer(
-        text=examples["text"],
+        text=examples["speech"],
         return_attention_mask=False,
     )
 
@@ -375,6 +375,8 @@ def tokenize_function(examples, tokenizer, in_length):
 
 
 from transformers.data.data_collator import *
+
+
 @dataclass
 class DataCollatorForNI:
     tokenizer: PreTrainedTokenizerBase
@@ -472,7 +474,7 @@ class DataCollatorForNI:
             if add_task_definition:
                 if isinstance(instance["Definition"], list):
                     definition = (
-                        "Definition: " + instance["Definition"][0].strip()
+                            "Definition: " + instance["Definition"][0].strip()
                     )
                 else:
                     definition = "Definition: " + instance["Definition"].strip()
@@ -483,9 +485,9 @@ class DataCollatorForNI:
             # try to add positive examples.
             pos_examples = []
             for idx, pos_example in enumerate(
-                instance["Positive Examples"][:num_pos_examples]
+                    instance["Positive Examples"][:num_pos_examples]
             ):
-                pos_example_str = f" Positive Example {idx+1} -\n"
+                pos_example_str = f" Positive Example {idx + 1} -\n"
                 pos_example_str += f"Input: {pos_example['input'].strip()}"
                 if not pos_example_str[-1] in string.punctuation:
                     pos_example_str += "."
@@ -503,15 +505,15 @@ class DataCollatorForNI:
                     pos_example_str += "\n"
                 pos_example_str += "\n"
                 if (
-                    len(
-                        self.tokenizer(
-                            definition
-                            + " ".join(pos_examples)
-                            + pos_example_str
-                            + task_input
-                        )["input_ids"]
-                    )
-                    <= self.max_source_length
+                        len(
+                            self.tokenizer(
+                                definition
+                                + " ".join(pos_examples)
+                                + pos_example_str
+                                + task_input
+                            )["input_ids"]
+                        )
+                        <= self.max_source_length
                 ):
                     pos_examples.append(pos_example_str)
                 else:
@@ -520,9 +522,9 @@ class DataCollatorForNI:
             # try to add negative examples.
             neg_examples = []
             for idx, neg_example in enumerate(
-                instance["Negative Examples"][:num_neg_examples]
+                    instance["Negative Examples"][:num_neg_examples]
             ):
-                neg_example_str = f" Negative Example {idx+1} -\n"
+                neg_example_str = f" Negative Example {idx + 1} -\n"
                 neg_example_str += f"Input: {neg_example['input'].strip()}"
                 if not neg_example_str[-1] in string.punctuation:
                     neg_example_str += "."
@@ -540,27 +542,27 @@ class DataCollatorForNI:
                     neg_example_str += "\n"
                 neg_example_str += "\n"
                 if (
-                    len(
-                        self.tokenizer(
-                            definition
-                            + " ".join(pos_examples)
-                            + " ".join(neg_examples)
-                            + neg_example_str
-                            + task_input
-                        )["input_ids"]
-                    )
-                    <= self.max_source_length
+                        len(
+                            self.tokenizer(
+                                definition
+                                + " ".join(pos_examples)
+                                + " ".join(neg_examples)
+                                + neg_example_str
+                                + task_input
+                            )["input_ids"]
+                        )
+                        <= self.max_source_length
                 ):
                     neg_examples.append(neg_example_str)
                 else:
                     break
 
             source = (
-                task_name
-                + definition
-                + "".join(pos_examples)
-                + "".join(neg_examples)
-                + task_input
+                    task_name
+                    + definition
+                    + "".join(pos_examples)
+                    + "".join(neg_examples)
+                    + task_input
             )
             tokenized_source = self.tokenizer(source)["input_ids"]
             if len(tokenized_source) <= self.max_source_length:

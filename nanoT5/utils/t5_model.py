@@ -2,15 +2,14 @@
 
 import copy
 import math
-from typing import Optional
 from dataclasses import dataclass
+from typing import Optional
 
 import torch
 from torch import nn
 from torch.nn import CrossEntropyLoss
-
-from transformers.modeling_utils import ModuleUtilsMixin
 from transformers.modeling_outputs import ModelOutput
+from transformers.modeling_utils import ModuleUtilsMixin
 from transformers.models.t5.configuration_t5 import T5Config
 from transformers.models.t5.modeling_t5 import (
     T5LayerNorm,
@@ -104,9 +103,9 @@ class T5Attention(nn.Module):
 
         # The other half of the buckets are for logarithmically bigger bins in positions up to max_distance
         relative_position_if_large = max_exact + (
-            torch.log(relative_position.float() / max_exact)
-            / math.log(max_distance / max_exact)
-            * (num_buckets - max_exact)
+                torch.log(relative_position.float() / max_exact)
+                / math.log(max_distance / max_exact)
+                * (num_buckets - max_exact)
         ).to(torch.long)
         relative_position_if_large = torch.min(
             relative_position_if_large, torch.full_like(relative_position_if_large, num_buckets - 1)
@@ -133,11 +132,11 @@ class T5Attention(nn.Module):
         return values
 
     def forward(
-        self,
-        hidden_states,
-        mask=None,
-        key_value_states=None,
-        position_bias=None,
+            self,
+            hidden_states,
+            mask=None,
+            key_value_states=None,
+            position_bias=None,
     ):
         """
         Self-attention (if key_value_states is None) or attention over source sentence (provided by key_value_states).
@@ -203,10 +202,10 @@ class T5LayerSelfAttention(nn.Module):
         self.dropout = nn.Dropout(config.dropout_rate)
 
     def forward(
-        self,
-        hidden_states,
-        attention_mask=None,
-        position_bias=None,
+            self,
+            hidden_states,
+            attention_mask=None,
+            position_bias=None,
     ):
         normed_hidden_states = self.layer_norm(hidden_states).type_as(hidden_states)
         attention_output = self.SelfAttention(
@@ -227,11 +226,11 @@ class T5LayerCrossAttention(nn.Module):
         self.dropout = nn.Dropout(config.dropout_rate)
 
     def forward(
-        self,
-        hidden_states,
-        key_value_states,
-        attention_mask=None,
-        position_bias=None,
+            self,
+            hidden_states,
+            key_value_states,
+            attention_mask=None,
+            position_bias=None,
     ):
         normed_hidden_states = self.layer_norm(hidden_states)
         attention_output = self.EncDecAttention(
@@ -255,15 +254,15 @@ class T5Block(nn.Module):
             self.layer.append(T5LayerCrossAttention(config))
 
         self.layer.append(T5LayerFF(config))
-    
+
     def forward(
-        self,
-        hidden_states,
-        attention_mask=None,
-        position_bias=None,
-        encoder_hidden_states=None,
-        encoder_attention_mask=None,
-        encoder_decoder_position_bias=None,
+            self,
+            hidden_states,
+            attention_mask=None,
+            position_bias=None,
+            encoder_hidden_states=None,
+            encoder_attention_mask=None,
+            encoder_decoder_position_bias=None,
     ):
         self_attention_outputs = self.layer[0](
             hidden_states,
@@ -311,11 +310,11 @@ class T5Stack(nn.Module, ModuleUtilsMixin):
         self.dropout = nn.Dropout(config.dropout_rate)
 
     def forward(
-        self,
-        input_ids=None,
-        attention_mask=None,
-        encoder_hidden_states=None,
-        encoder_attention_mask=None,
+            self,
+            input_ids=None,
+            attention_mask=None,
+            encoder_hidden_states=None,
+            encoder_attention_mask=None,
     ) -> EncoderOutput:
         input_shape = input_ids.size()
         batch_size, seq_length = input_shape
@@ -370,7 +369,7 @@ class T5Stack(nn.Module, ModuleUtilsMixin):
             position_bias = layer_outputs[1]
             if self.is_decoder and encoder_hidden_states is not None:
                 encoder_decoder_position_bias = layer_outputs[2]
-        
+
         hidden_states = self.final_layer_norm(hidden_states).type_as(hidden_states)
         hidden_states = self.dropout(hidden_states)
 
@@ -403,13 +402,13 @@ class MyT5(nn.Module):
         self.generation_config = None
 
         self.apply(self._init_weights)
-    
+
     def generate(
-        self,
-        input_ids: Optional[torch.LongTensor] = None,
-        attention_mask: Optional[torch.FloatTensor] = None,
-        max_length = None,
-        **kwargs,
+            self,
+            input_ids: Optional[torch.LongTensor] = None,
+            attention_mask: Optional[torch.FloatTensor] = None,
+            max_length=None,
+            **kwargs,
     ) -> torch.LongTensor:
         """
             input_ids: B x L_encoder, int64
@@ -438,7 +437,7 @@ class MyT5(nn.Module):
 
             if (labels == 1).sum(-1).clamp(min=0, max=1).sum().item() == B:
                 break
-        
+
         labels[:, -1] = 1
 
         # Mask out the padding, i.e., all positions after the first 1 with 0
@@ -449,13 +448,13 @@ class MyT5(nn.Module):
         return labels
 
     def forward(
-        self,
-        input_ids: Optional[torch.LongTensor] = None,
-        attention_mask: Optional[torch.FloatTensor] = None,
-        decoder_input_ids: Optional[torch.LongTensor] = None,
-        decoder_attention_mask: Optional[torch.BoolTensor] = None,
-        labels: Optional[torch.LongTensor] = None,
-        encoder_outputs = None,
+            self,
+            input_ids: Optional[torch.LongTensor] = None,
+            attention_mask: Optional[torch.FloatTensor] = None,
+            decoder_input_ids: Optional[torch.LongTensor] = None,
+            decoder_attention_mask: Optional[torch.BoolTensor] = None,
+            labels: Optional[torch.LongTensor] = None,
+            encoder_outputs=None,
     ) -> Seq2SeqLMOutput:
         """
             input_ids: B x L_encoder, int64
@@ -513,8 +512,8 @@ class MyT5(nn.Module):
             key_value_proj_dim = self.config.d_kv
             n_heads = self.config.num_heads
             module.q.weight.data.normal_(mean=0.0, std=factor * ((d_model * key_value_proj_dim) ** -0.5))
-            module.k.weight.data.normal_(mean=0.0, std=factor * (d_model**-0.5))
-            module.v.weight.data.normal_(mean=0.0, std=factor * (d_model**-0.5))
+            module.k.weight.data.normal_(mean=0.0, std=factor * (d_model ** -0.5))
+            module.v.weight.data.normal_(mean=0.0, std=factor * (d_model ** -0.5))
             module.o.weight.data.normal_(mean=0.0, std=factor * ((n_heads * key_value_proj_dim) ** -0.5))
             if hasattr(module, "relative_attention_bias"):
                 module.relative_attention_bias.weight.data.normal_(mean=0.0, std=factor * ((d_model) ** -0.5))

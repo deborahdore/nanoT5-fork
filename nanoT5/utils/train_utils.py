@@ -1,14 +1,16 @@
-import torch
 import time
+
 import evaluate
-from .logging_utils import Averager
+import torch
 from datasets.iterable_dataset import IterableDataset
+
+from nanoT5.utils.logging_utils import Averager
 
 
 def maybe_save_checkpoint(accelerator, args):
     if (
-        args.current_train_step > args.optim.total_steps
-        or args.current_train_step % args.checkpoint.every_steps == 0
+            args.current_train_step > args.optim.total_steps
+            or args.current_train_step % args.checkpoint.every_steps == 0
     ):
         output_dir = f'checkpoint-{args.mode}-{args.current_train_step}'
         accelerator.save_state(output_dir=output_dir)
@@ -22,7 +24,7 @@ def maybe_eval_predict(model, dataloader, logger, args, tokenizer):
         model.eval()
 
         with torch.no_grad():
-            eval(model, dataloader, logger, args, tokenizer)
+            evaluate(model, dataloader, logger, args, tokenizer)
 
             if args.mode == 'ft':
                 predict(
@@ -63,7 +65,7 @@ def maybe_grad_clip_and_grad_calc(accelerator, model, args):
     if args.logging.grad_l2:
         if grad_l2 is None:
             grad_l2 = (
-                sum(p.grad.detach().data.norm(2).item() ** 2 for p in model.parameters()) ** 0.5
+                    sum(p.grad.detach().data.norm(2).item() ** 2 for p in model.parameters()) ** 0.5
             )
 
         return {'grad_l2': grad_l2}
@@ -99,7 +101,7 @@ def forward(model, batch, calc_acc=False):
     return loss, stats
 
 
-def eval(model, dataloader, logger, args, tokenizer):
+def evaluate(model, dataloader, logger, args, tokenizer):
     args.last_log = time.time()
     averager = Averager()
 

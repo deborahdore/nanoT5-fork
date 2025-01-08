@@ -16,10 +16,10 @@
 # Lint as: python3
 """Natural Instruction V2 Dataset."""
 
-
 import json
 import os
 import random
+
 import datasets
 
 logger = datasets.logging.get_logger(__name__)
@@ -42,8 +42,10 @@ through an iterative peer review process to ensure their quality.
 
 _URL = "https://instructions.apps.allenai.org/"
 
+
 class NIConfig(datasets.BuilderConfig):
-    def __init__(self, *args, task_dir=None, max_num_instances_per_task=None, max_num_instances_per_eval_task=None, **kwargs):
+    def __init__(self, *args, task_dir=None, max_num_instances_per_task=None, max_num_instances_per_eval_task=None,
+                 **kwargs):
         super().__init__(*args, **kwargs)
         self.task_dir: str = task_dir
         self.max_num_instances_per_task: int = max_num_instances_per_task
@@ -118,8 +120,8 @@ class NaturalInstructions(datasets.GeneratorBasedBuilder):
             datasets.SplitGenerator(
                 name=datasets.Split.TRAIN,
                 gen_kwargs={
-                    "path": os.path.join(split_dir, "train_tasks.txt"), 
-                    "task_dir": task_dir, 
+                    "path": os.path.join(split_dir, "train_tasks.txt"),
+                    "task_dir": task_dir,
                     "max_num_instances_per_task": self.config.max_num_instances_per_task,
                     "subset": "train"
                 }),
@@ -134,8 +136,8 @@ class NaturalInstructions(datasets.GeneratorBasedBuilder):
             datasets.SplitGenerator(
                 name=datasets.Split.TEST,
                 gen_kwargs={
-                    "path": os.path.join(split_dir, "test_tasks.txt"), 
-                    "task_dir": task_dir, 
+                    "path": os.path.join(split_dir, "test_tasks.txt"),
+                    "task_dir": task_dir,
                     "max_num_instances_per_task": self.config.max_num_instances_per_eval_task,
                     "subset": "test"
                 }),
@@ -170,4 +172,3 @@ class NaturalInstructions(datasets.GeneratorBasedBuilder):
                         example["id"] = instance["id"]
                         example["Instance"] = instance
                         yield f"{task_name}_{idx}", example
-
