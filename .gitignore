@@ -149,8 +149,8 @@ configs/local/default.yaml
 /data/pretraining
 /data/original
 
-/logs/
-/data/
+/nanoT5/logs/
+/nanoT5/data/
 
 .env
 
